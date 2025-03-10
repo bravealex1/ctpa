@@ -476,7 +476,7 @@ def evaluate_case(case_index):
                 slice_images.append(filename)
         slice_images.sort()
 
-        return render_template('evaluate.html',
+        return render_template('index.html',
                                case_index=case_index,
                                total_cases=total_cases,
                                case_id=case_id,
