@@ -346,12 +346,8 @@
 from flask import Flask, session, render_template, request, redirect, url_for, send_from_directory
 import os, json, random
 import pandas as pd
-from flask_httpauth import HTTPBasicAuth
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-auth = HTTPBasicAuth()
-app.secret_key = 'your_secret_key_here'  # Replace with a secure random key
 
 # ----------------------------------------------------------------------
 # 1) Set up your base directory and CSV paths
