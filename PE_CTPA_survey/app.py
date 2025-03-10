@@ -14,8 +14,8 @@ if "current_slice" not in st.session_state:
     st.session_state.current_slice = 0
 
 # --- Set up base directory and CSV paths ---
-label_path = r'C:\Users\alexvanhalen\OneDrive\Desktop\PE_CTPA_survey\PE_CTPA_survey\Ext_Val_XNAT.csv'
-BASE_IMAGE_DIR = r'C:\Users\alexvanhalen\OneDrive\Desktop\PE_CTPA_survey\PE_CTPA_survey\2D_picture'
+label_path = 'PE_CTPA_survey/Ext_Val_XNAT.csv'
+BASE_IMAGE_DIR = 'PE_CTPA_survey/2D_picture'
 
 # --- Load CSV and filter desired cases ---
 try:
