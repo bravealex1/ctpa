@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTPA Report Evaluation Survey</title>
+  <style>
+    body {
+      margin: 0 auto;
+      max-width: 800px;
+      padding: 20px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+    .progress { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    .report-container { display: flex; justify-content: space-between; }
+    .report { width: 48%; background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px; }
+    .evaluation { margin: 20px 0; }
+    .evaluation label { margin-right: 15px; }
+    .submit-button {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .submit-button:hover { background-color: #0056b3; }
+    .analysis-summary {
+      background: #e9f5ff;
+      padding: 15px;
+      border-left: 4px solid #007BFF;
+      margin: 20px 0;
+    }
+    .upload-section { margin: 20px 0; }
+    textarea { width: 100%; height: 100px; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>CTPA Report Evaluation Survey</h1>
+  <div class="progress">
+    <p>Report {{ index + 1 }} of {{ length }} | Image ID: {{ item.name }}</p>
+  </div>
+  <div class="analysis-summary">
+    <h2>Survey Overview</h2>
+    <p>Total Reports: {{ analysis_summary.total_reports }}</p>
+    <p>Current Findings Similarity: {{ analysis_summary.findings_similarity }}</p>
+    <p>Common Errors: {{ analysis_summary.most_frequent_error }}</p>
+  </div>
+  
+  <h2>Findings Report</h2>
+  <div class="report-container">
+    <div class="report">
+      <h3>Ground Truth (Left)</h3>
+      <pre>{{ gt_findings }}</pre>
+    </div>
+    <div class="report">
+      <h3>AI-Generated (Right)</h3>
+      <pre>{{ item.findings }}</pre>
+    </div>
+  </div>
+  <div class="evaluation">
+    <p>Select which report is AI-generated (Findings):</p>
+    <label><input type="radio" name="evaluation_choice_findings" value="Left" required> Left</label>
+    <label><input type="radio" name="evaluation_choice_findings" value="Right"> Right</label>
+    <label><input type="radio" name="evaluation_choice_findings" value="Unsure"> Unsure</label>
+  </div>
+  <div class="evaluation">
+    <label for="error_category_findings">Error Category (Findings):</label>
+    <input type="text" id="error_category_findings" name="error_category_findings" placeholder="e.g., False positive, Incorrect location">
+  </div>
+  <div class="evaluation">
+    <label for="error_reasoning_findings">Error Reasoning (Findings):</label>
+    <textarea id="error_reasoning_findings" name="error_reasoning_findings" placeholder="Explain the reasoning..."></textarea>
+  </div>
+  
+  <h2>Impression Report</h2>
+  <div class="report-container">
+    <div class="report">
+      <h3>Ground Truth (Left)</h3>
+      <pre>{{ gt_impression }}</pre>
+    </div>
+    <div class="report">
+      <h3>AI-Generated (Right)</h3>
+      <pre>{{ item.impression }}</pre>
+    </div>
+  </div>
+  <div class="evaluation">
+    <p>Select which report is AI-generated (Impressions):</p>
+    <label><input type="radio" name="evaluation_choice_impressions" value="Left" required> Left</label>
+    <label><input type="radio" name="evaluation_choice_impressions" value="Right"> Right</label>
+    <label><input type="radio" name="evaluation_choice_impressions" value="Unsure"> Unsure</label>
+  </div>
+  <div class="evaluation">
+    <label for="error_category_impressions">Error Category (Impressions):</label>
+    <input type="text" id="error_category_impressions" name="error_category_impressions" placeholder="e.g., False negative, Incorrect severity">
+  </div>
+  <div class="evaluation">
+    <label for="error_reasoning_impressions">Error Reasoning (Impressions):</label>
+    <textarea id="error_reasoning_impressions" name="error_reasoning_impressions" placeholder="Explain the reasoning..."></textarea>
+  </div>
+  
+  <div class="upload-section">
+    <label for="uploaded_image">Upload associated image (if any):</label>
+    <input type="file" id="uploaded_image" name="uploaded_image" accept="image/*">
+  </div>
+  
+  <form method="post" action="/submit" enctype="multipart/form-data">
+    <input type="hidden" name="index" value="{{ index }}">
+    <input type="hidden" name="image_name" value="{{ item.name }}">
+    <button type="submit" class="submit-button">
+      {{ 'Submit Final Review' if (index + 1 == length) else 'Next Report' }}
+    </button>
+  </form>
+</body>
+</html>

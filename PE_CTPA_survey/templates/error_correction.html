@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Error Correction - Case {{ case_id }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h2>Error Correction - Case {{ case_id }} (Case {{ case_index + 1 }} of {{ total_cases }})</h2>
+  <!-- In this session, the radiologist edits the reports without knowing which is AI -->
+  <div class="reports-container">
+    <div class="report-column">
+      <h3>Report A</h3>
+      <div id="textA" class="report-text">{{ reportA }}</div>
+      <button type="button" class="annotate-btn" data-report="A">Annotate Error</button>
+    </div>
+    <div class="report-column">
+      <h3>Report B</h3>
+      <div id="textB" class="report-text">{{ reportB }}</div>
+      <button type="button" class="annotate-btn" data-report="B">Annotate Error</button>
+    </div>
+  </div>
+  <form id="correctionForm" method="POST">
+    <input type="hidden" name="corrections" id="correctionsInput" value="[]">
+    <div class="nav-footer">
+      <button type="submit" id="saveEditsButton">Save Edited Reports & Next Case</button>
+    </div>
+  </form>
+
+  <!-- Annotation Modal (same as before) -->
+  <div id="annotationModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h3>Edit Error</h3>
+      <p><strong>Original text:</strong> <span id="originalText"></span></p>
+      <p><strong>Error Type:</strong>
+         <select id="errorType">
+           <option value="Typo">Typo</option>
+           <option value="Omission">Omission</option>
+           <option value="Inaccuracy">Inaccuracy</option>
+           <option value="Formatting">Formatting</option>
+         </select>
+      </p>
+      <p><strong>Correction:</strong></p>
+      <textarea id="correctionText" rows="4" cols="40" placeholder="Enter corrected text here"></textarea><br>
+      <button type="button" id="saveCorrection">Save Correction</button>
+    </div>
+  </div>
+
+  <script>
+    let corrections = [];
+    document.querySelectorAll('.annotate-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-report');
+        let selectedText = "";
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length > 0) {
+          const range = selection.getRangeAt(0);
+          const parentDiv = range.commonAncestorContainer.parentElement;
+          if (parentDiv && parentDiv.id === "text" + side) {
+            selectedText = selection.toString().trim();
+          }
+        }
+        if (!selectedText) {
+          alert("Please highlight text in Report " + side + " to annotate.");
+          return;
+        }
+        document.getElementById('originalText').innerText = selectedText;
+        document.getElementById('annotationModal').dataset.side = side;
+        document.getElementById('annotationModal').style.display = 'flex';
+        document.getElementById('correctionText').value = '';
+      });
+    });
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('annotationModal').style.display = 'none';
+    });
+    document.getElementById('saveCorrection').addEventListener('click', () => {
+      const side = document.getElementById('annotationModal').dataset.side;
+      const origText = document.getElementById('originalText').innerText;
+      const corrText = document.getElementById('correctionText').value;
+      const errorType = document.getElementById('errorType').value;
+      if (corrText.trim() === "") {
+        alert("Please enter a correction.");
+        return;
+      }
+      corrections.push({ side: side, original: origText, corrected: corrText, errorType: errorType });
+      document.getElementById('correctionsInput').value = JSON.stringify(corrections);
+      const reportDiv = (side==='A') ? document.getElementById('textA') : document.getElementById('textB');
+      const innerHTML = reportDiv.innerHTML;
+      const idx = innerHTML.indexOf(origText);
+      if(idx !== -1){
+        reportDiv.innerHTML = innerHTML.substring(0, idx) + '<mark class="error-mark">' + origText + '</mark>' + innerHTML.substring(idx+origText.length);
+      }
+      document.getElementById('annotationModal').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

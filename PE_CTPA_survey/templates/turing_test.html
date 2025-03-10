@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Turing Test - Case {{ case_id }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h2>Turing Test - Case {{ case_id }} (Case {{ case_index + 1 }} of {{ total_cases }})</h2>
+  <!-- In this session, an independent radiologist evaluates which report was AI generated -->
+  <div class="reports-container">
+    <div class="report-column">
+      <h3>Report A</h3>
+      <div id="textA" class="report-text">{{ reportA }}</div>
+      <label><input type="radio" name="ai_choice" value="A"> Mark as AI Generated</label>
+    </div>
+    <div class="report-column">
+      <h3>Report B</h3>
+      <div id="textB" class="report-text">{{ reportB }}</div>
+      <label><input type="radio" name="ai_choice" value="B"> Mark as AI Generated</label>
+    </div>
+  </div>
+  <form id="turingForm" method="POST">
+    <input type="hidden" name="ai_selection" id="aiSelection" value="">
+    <div class="nav-footer">
+      <button type="submit" id="submitTuring">Submit Turing Test</button>
+    </div>
+  </form>
+  <script>
+    const turingForm = document.getElementById('turingForm');
+    turingForm.addEventListener('submit', (e) => {
+      const selected = document.querySelector('input[name="ai_choice"]:checked');
+      if (!selected) {
+        e.preventDefault();
+        alert("Please select which report you believe is AI generated.");
+        return;
+      }
+      document.getElementById('aiSelection').value = selected.value;
+    });
+  </script>
+</body>
+</html>

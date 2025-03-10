@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTPA Report Modification Survey</title>
+    <style>
+        body {
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #007BFF;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+        .submit-button {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+        .analysis-summary {
+            background: #e9f5ff;
+            padding: 15px;
+            border-left: 4px solid #007BFF;
+            margin: 20px 0;
+        }
+        .generated-summary p {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CTPA Report Modification Survey</h1>
+    
+    <div class="progress">
+        <p>Report {{ index + 1 }} of {{ length }} | Image ID: {{ item.name }}</p>
+    </div>
+
+    <div class="analysis-summary">
+        <h2>Analysis Overview</h2>
+        <p>Total Reports: {{ analysis_summary.total_reports }}</p>
+        <p>Current Similarity Score: {{ analysis_summary.findings_similarity }}</p>
+        <p>Common Errors Detected: {{ analysis_summary.most_frequent_error }}</p>
+    </div>
+
+    <div class="generated-summary">
+        <h3>Original Findings</h3>
+        <pre>{{ item.findings }}</pre>
+        
+        <h3>Original Impression</h3>
+        <pre>{{ item.impression }}</pre>
+    </div>
+
+    <form method="post" action="/submit">
+        <input type="hidden" name="index" value="{{ index }}">
+        <input type="hidden" name="image_name" value="{{ item.name }}">
+
+        <h3>Edit Findings Report</h3>
+        <textarea name="modified_findings" id="modified_findings" 
+                  placeholder="Edit findings here...">{{ item.findings }}</textarea>
+
+        <h3>Edit Impression Report</h3>
+        <textarea name="modified_impressions" id="modified_impressions"
+                  placeholder="Edit impression here...">{{ item.impression }}</textarea>
+
+        <button type="submit" class="submit-button">
+            {{ 'Submit Final Review' if (index + 1 == length) else 'Next Report' }}
+        </button>
+    </form>
+</body>
+</html>

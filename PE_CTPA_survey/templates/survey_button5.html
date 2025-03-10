@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radiology Report Evaluation</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .report-section { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    .image-stack { 
+      max-height: 600px; 
+      overflow-y: auto; 
+      border: 1px solid #ddd; 
+      padding: 5px; 
+      margin-bottom: 20px; 
+      text-align: center;
+    }
+    .stack-image { max-width: 100%; height: auto; margin-bottom: 10px; }
+    textarea { width: 100%; height: 100px; padding: 8px; margin: 5px 0; }
+    .submit-button { background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    .submit-button:hover { background-color: #0056b3; }
+    .evaluation-scheme { margin: 20px 0; }
+    .figure1 { margin: 20px 0; text-align: center; }
+    .figure1 img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; }
+    .figure1-caption { font-size: 0.9em; color: #555; margin-top: 5px; }
+    .hidden { display: none; }
+    .panel { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    .panel h3 { margin-top: 0; }
+  </style>
+  <script>
+    function toggleScheme() {
+      var scheme = document.querySelector('input[name="evaluation_scheme"]:checked').value;
+      if (scheme === "pairwise") {
+        document.getElementById("pairwiseSection").style.display = "block";
+        document.getElementById("errorCorrectionSection").style.display = "none";
+      } else {
+        document.getElementById("pairwiseSection").style.display = "none";
+        document.getElementById("errorCorrectionSection").style.display = "block";
+      }
+    }
+    window.onload = toggleScheme;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>CTPA Report Evaluation</h1>
+    <div class="progress">
+      <p>Case {{ index+1 }} of {{ length }} | Accession: {{ item.name }}</p>
+    </div>
+
+    <!-- Show a single image for this case (if available) -->
+    {% if item.images and item.images|length > 0 %}
+      <h2>Radiograph</h2>
+      <div class="image-stack">
+        <img src="{{ url_for('static', filename=item.images[0]) }}" class="stack-image">
+      </div>
+    {% else %}
+      <p>No image available for this case.</p>
+    {% endif %}
+
+    <!-- Evaluation Scheme Selector -->
+    <div class="evaluation-scheme">
+      <h3>Select Evaluation Scheme</h3>
+      <label>
+        <input type="radio" name="evaluation_scheme" value="pairwise" onchange="toggleScheme()" checked>
+        Pairwise Preference Test
+      </label>
+      <label style="margin-left:20px;">
+        <input type="radio" name="evaluation_scheme" value="error_correction" onchange="toggleScheme()">
+        Error Correction Task
+      </label>
+    </div>
+
+    <!-- Pairwise Preference Test Section -->
+    <div id="pairwiseSection">
+      <div class="panel">
+        <h3>Report Comparison</h3>
+        <div style="display: flex; gap: 20px;">
+          <div style="flex: 1;">
+            <h4>Report A (AI-Generated)</h4>
+            <strong>Findings:</strong>
+            <pre>{{ item.findings }}</pre>
+            <strong>Impression:</strong>
+            <pre>{{ item.impression }}</pre>
+          </div>
+          <div style="flex: 1;">
+            <h4>Report B (Human-Written)</h4>
+            <strong>Findings:</strong>
+            <pre>{{ item.human_findings }}</pre>
+            <strong>Impression:</strong>
+            <pre>{{ item.human_impression }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Your Preference</h3>
+        <p>Which report should be used downstream for patient care?</p>
+        <label><input type="radio" name="pairwise_choice" value="A" required> Report A (AI-Generated)</label><br>
+        <label><input type="radio" name="pairwise_choice" value="B"> Report B (Human-Written)</label><br>
+        <label><input type="radio" name="pairwise_choice" value="neither"> Neither / Equivalence</label>
+        <br><br>
+        <label for="pairwise_justification">Justification (optional):</label>
+        <textarea name="pairwise_justification" id="pairwise_justification" placeholder="Please provide your reasoning..."></textarea>
+      </div>
+    </div>
+
+    <!-- Error Correction Task Section -->
+    <div id="errorCorrectionSection" class="hidden">
+      <div class="panel">
+        <h3>Error Correction: Findings</h3>
+        <strong>Ground Truth Findings:</strong>
+        <pre>{{ item.human_findings }}</pre>
+        <strong>AI-Generated Findings:</strong>
+        <pre>{{ item.findings }}</pre>
+        <p>Please indicate if there are any errors in the findings:</p>
+        <input type="text" name="error_category_findings" placeholder="Error Category (1-4)">
+        <input type="text" name="error_severity_findings" placeholder="Severity Level (1-4)">
+        <textarea name="error_reasoning_findings" placeholder="Corrections and reasoning..."></textarea>
+      </div>
+      <div class="panel">
+        <h3>Error Correction: Impression</h3>
+        <strong>Ground Truth Impression:</strong>
+        <pre>{{ item.human_impression }}</pre>
+        <strong>AI-Generated Impression:</strong>
+        <pre>{{ item.impression }}</pre>
+        <p>Please indicate if there are any errors in the impression:</p>
+        <input type="text" name="error_category_impressions" placeholder="Error Category (1-4)">
+        <input type="text" name="error_severity_impressions" placeholder="Severity Level (1-4)">
+        <textarea name="error_reasoning_impressions" placeholder="Corrections and reasoning..."></textarea>
+      </div>
+    </div>
+
+    <!-- Common Fields and Form Submission -->
+    <form method="POST" action="/submit">
+      <input type="hidden" name="index" value="{{ index }}">
+      <input type="hidden" name="image_name" value="{{ item.name }}">
+      <!-- The selected evaluation_scheme is sent automatically from the radio buttons -->
+
+      <div class="panel">
+        <h3>Turing Metrics & Additional Comments</h3>
+        <input type="text" name="human_likeness" placeholder="Human Likeness (1-5 scale)" value="3">
+        <input type="text" name="bias_indication" placeholder="Bias Indication">
+        <input type="text" name="confidence_level" placeholder="Confidence Level (1-5 scale)" value="3">
+        <br><br>
+        <label for="additional_notes">Additional Comments:</label>
+        <textarea name="additional_notes" id="additional_notes" placeholder="Any additional observations..."></textarea>
+      </div>
+
+      <button type="submit" class="submit-button">
+        {{ 'Complete Evaluation' if (index + 1 == length) else 'Next Case' }}
+      </button>
+    </form>
+  </div>
+</body>
+</html>

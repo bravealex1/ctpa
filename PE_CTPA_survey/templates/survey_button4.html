@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTPA Report Evaluation Survey</title>
+  <style>
+    /* Basic Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    /* Body and overall page styling */
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    /* Main container */
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin: 20px 0;
+    }
+    /* Headings */
+    h1, h2, h3 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    /* Progress and overview boxes */
+    .progress,
+    .analysis-summary {
+      background: #e9f5ff;
+      padding: 15px;
+      border-left: 4px solid #007BFF;
+      margin-bottom: 20px;
+    }
+    .progress p {
+      text-align: center;
+    }
+    /* Form styling */
+    form {
+      width: 100%;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    /* Report container: stacked and centered */
+    .report-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .report {
+      width: 90%;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      text-align: left;
+      /* Ensure long words/lines wrap properly */
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+    /* Ensure text inside pre tags wraps and doesn't overflow */
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+    }
+    /* Evaluation and upload sections */
+    .evaluation,
+    .upload-section {
+      margin-bottom: 20px;
+    }
+    .evaluation label {
+      margin-right: 15px;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    /* Submit button styling */
+    .submit-button {
+      background-color: #007BFF;
+      color: #fff;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      display: block;
+      margin: 0 auto;
+    }
+    .submit-button:hover {
+      background-color: #0056b3;
+    }
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .report {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>CTPA Report Evaluation Survey</h1>
+    <div class="progress">
+      <p>Report {{ index + 1 }} of {{ length }} | Image ID: {{ item.name }}</p>
+    </div>
+    <div class="analysis-summary">
+      <h2>Survey Overview</h2>
+      <p>Total Reports: {{ analysis_summary.total_reports }}</p>
+      <p>Current Findings Similarity: {{ analysis_summary.findings_similarity }}</p>
+      <p>Common Errors: {{ analysis_summary.most_frequent_error }}</p>
+    </div>
+
+    <!-- All inputs are wrapped within the form -->
+    <form method="post" action="/submit" enctype="multipart/form-data">
+      <input type="hidden" name="index" value="{{ index }}" />
+      <input type="hidden" name="image_name" value="{{ item.name }}" />
+
+      <!-- Findings Section -->
+      <div class="section">
+        <h2>Findings Report Comparison</h2>
+        <div class="report-container">
+          <div class="report">
+            <h3>Report A</h3>
+            <pre>{{ gt_findings }}</pre>
+          </div>
+          <div class="report">
+            <h3>Report B</h3>
+            <pre>{{ item.findings }}</pre>
+          </div>
+        </div>
+        <div class="evaluation">
+          <p><strong>Which report appears to be AI-generated? (Findings)</strong></p>
+          <label>
+            <input type="radio" name="evaluation_choice_findings" value="Report A" required />
+            Report A
+          </label>
+          <label>
+            <input type="radio" name="evaluation_choice_findings" value="Report B" />
+            Report B
+          </label>
+          <label>
+            <input type="radio" name="evaluation_choice_findings" value="Unsure" />
+            Unsure
+          </label>
+        </div>
+        <div class="evaluation">
+          <p><strong>Error Categorization (Findings):</strong></p>
+          <ul>
+            <li>1) False prediction of finding (false positive)</li>
+            <li>2) Omission of finding (false negative)</li>
+            <li>3) Incorrect location/position of finding</li>
+            <li>4) Incorrect severity of finding</li>
+          </ul>
+          <label for="error_category_findings">Enter the category number or description:</label>
+          <input type="text" id="error_category_findings" name="error_category_findings" placeholder="e.g., 1 or False prediction of finding" />
+        </div>
+        <div class="evaluation">
+          <p><strong>Error Severity (Findings):</strong></p>
+          <ul>
+            <li>1) Not actionable</li>
+            <li>2) Actionable nonurgent error</li>
+            <li>3) Urgent error</li>
+            <li>4) Emergent error</li>
+          </ul>
+          <label for="error_severity_findings">Enter the severity number or description:</label>
+          <input type="text" id="error_severity_findings" name="error_severity_findings" placeholder="e.g., 2 or Actionable nonurgent error" />
+        </div>
+        <div class="evaluation">
+          <label for="error_reasoning_findings"><strong>Error Correction and Reasoning (Findings):</strong></label>
+          <textarea id="error_reasoning_findings" name="error_reasoning_findings" placeholder="Explain your reasoning and provide text corrections..."></textarea>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Impressions Section -->
+      <div class="section">
+        <h2>Impression Report Comparison</h2>
+        <div class="report-container">
+          <div class="report">
+            <h3>Report A</h3>
+            <pre>{{ gt_impression }}</pre>
+          </div>
+          <div class="report">
+            <h3>Report B</h3>
+            <pre>{{ item.impression }}</pre>
+          </div>
+        </div>
+        <div class="evaluation">
+          <p><strong>Which report appears to be AI-generated? (Impressions)</strong></p>
+          <label>
+            <input type="radio" name="evaluation_choice_impressions" value="Report A" required />
+            Report A
+          </label>
+          <label>
+            <input type="radio" name="evaluation_choice_impressions" value="Report B" />
+            Report B
+          </label>
+          <label>
+            <input type="radio" name="evaluation_choice_impressions" value="Unsure" />
+            Unsure
+          </label>
+        </div>
+        <div class="evaluation">
+          <p><strong>Error Categorization (Impressions):</strong></p>
+          <ul>
+            <li>1) False prediction of finding (false positive)</li>
+            <li>2) Omission of finding (false negative)</li>
+            <li>3) Incorrect location/position of finding</li>
+            <li>4) Incorrect severity of finding</li>
+          </ul>
+          <label for="error_category_impressions">Enter the category number or description:</label>
+          <input type="text" id="error_category_impressions" name="error_category_impressions" placeholder="e.g., 2 or Omission of finding" />
+        </div>
+        <div class="evaluation">
+          <p><strong>Error Severity (Impressions):</strong></p>
+          <ul>
+            <li>1) Not actionable</li>
+            <li>2) Actionable nonurgent error</li>
+            <li>3) Urgent error</li>
+            <li>4) Emergent error</li>
+          </ul>
+          <label for="error_severity_impressions">Enter the severity number or description:</label>
+          <input type="text" id="error_severity_impressions" name="error_severity_impressions" placeholder="e.g., 3 or Urgent error" />
+        </div>
+        <div class="evaluation">
+          <label for="error_reasoning_impressions"><strong>Error Correction and Reasoning (Impressions):</strong></label>
+          <textarea id="error_reasoning_impressions" name="error_reasoning_impressions" placeholder="Explain your reasoning and provide text corrections..."></textarea>
+        </div>
+      </div>
+
+      <!-- File Upload Section -->
+      <div class="upload-section">
+        <label for="uploaded_image"><strong>Upload Associated Image (if any):</strong></label>
+        <input type="file" id="uploaded_image" name="uploaded_image" accept="image/*" />
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-button">
+        {{ 'Submit Final Review' if (index + 1 == length) else 'Next Report' }}
+      </button>
+    </form>
+  </div>
+</body>
+</html>

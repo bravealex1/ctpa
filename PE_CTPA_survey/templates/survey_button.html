@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CTPA Report Modification Survey</title>
+    <style>
+        body {
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        .progress, .analysis-summary, .generated-summary {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>CTPA Report Modification Survey</h1>
+
+    <div class="progress">
+        <p>Report {{ index + 1 }} of {{ length }}, Image name: {{ item.name }}</p>
+    </div>
+
+    <!-- Display Analysis Summary -->
+    <div class="analysis-summary">
+        <h2>Analysis Summary:</h2>
+        <p><strong>Total Reports Analyzed:</strong> {{ analysis_summary.total_reports }}</p>
+        <p><strong>Average Findings Similarity:</strong> {{ analysis_summary.findings_similarity }}</p>
+        <p><strong>Average Impression Similarity:</strong> {{ analysis_summary.impression_similarity }}</p>
+        <p><strong>Most Frequent Significant Error:</strong> {{ analysis_summary.most_frequent_error }}</p>
+    </div>
+    
+    <div class="generated-summary">
+        <h2>Generated Reports:</h2>
+        <p><strong>Generated FINDINGS:</strong></p>
+        <p>{{ item.findings }}</p>
+        <p><strong>Generated IMPRESSION:</strong></p>
+        <p>{{ item.impression }}</p>
+    </div>
+
+    <div class="report-container">
+        <form method="post" action="/submit">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input type="hidden" name="image_name" value="{{ item.name }}">
+
+            <!-- Findings Input -->
+            <label for="modified_findings">
+                <p>Please review and modify the following FINDINGS Report as needed:</p>
+            </label>
+            <textarea name="modified_findings" id="modified_findings">{{ item.findings }}</textarea>
+
+            <!-- Impressions Input -->
+            <label for="modified_impressions">
+                <p>Please review and modify the following IMPRESSION Report as needed:</p>
+            </label>
+            <textarea name="modified_impressions" id="modified_impressions">{{ item.impression }}</textarea>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button">
+                {% if index + 1 == length %}
+                    Finish Survey
+                {% else %}
+                    Next Report
+                {% endif %}
+            </button>
+        </form>
+    </div>
+</body>
+</html>
