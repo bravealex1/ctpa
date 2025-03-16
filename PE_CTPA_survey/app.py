@@ -12,6 +12,8 @@ if "page" not in st.session_state:
     st.session_state.page = "index"
 if "current_slice" not in st.session_state:
     st.session_state.current_slice = 0
+if "corrections" not in st.session_state:
+    st.session_state["corrections"] = []  # list of correction entries
 
 # --- Set up base directory and CSV paths ---
 label_path = 'PE_CTPA_survey/Ext_Val_XNAT.csv'
@@ -127,20 +129,62 @@ def evaluate_case():
     st.markdown("#### Slice Images")
     display_slice_carousel(case_id)
     
-    # Annotation / Corrections input
-    corrections_input = st.text_area("Enter corrections/annotations as JSON", value="[]", height=100)
-    if st.button("Submit Corrections"):
+    # --- Correction / Annotations Input ---
+    st.markdown("#### Corrections / Annotations")
+    # For demonstration, we use a hardcoded list of organs.
+    # In practice, you could parse the report to detect these automatically.
+    detected_organs = [
+        "LIVER", "PORTAL VEIN", "INTRAHEPATIC IVC", "INTRAHEPATIC BILE DUCTS", 
+        "COMMON BILE DUCT", "GALLBLADDER", "PANCREAS", "RIGHT KIDNEY", "OTHER FINDINGS"
+    ]
+    st.write("Select the organs you want to correct:")
+    selected_organs = []
+    for organ in detected_organs:
+        if st.checkbox(organ, key=f"organ_{organ}"):
+            selected_organs.append(organ)
+    
+    if selected_organs:
+        st.write("Enter correction details:")
+        # Let the user choose one organ from the selected ones for this correction entry.
+        organ_to_correct = st.selectbox("Organ to correct", options=selected_organs, key="organ_select")
+        predefined_reasons = ["Measurement error", "Misinterpretation", "Missing finding", "Other"]
+        reason_choice = st.selectbox("Reason for disagreement", options=predefined_reasons, key="reason_choice")
+        if reason_choice == "Other":
+            reason_detail = st.text_input("Specify other reason", key="reason_text")
+            final_reason = reason_detail if reason_detail else "Other"
+        else:
+            final_reason = reason_choice
+        correction_text = st.text_area("Correction details", key="correction_text")
+        
+        if st.button("Add Correction"):
+            new_correction = {
+                "organ": organ_to_correct,
+                "reason": final_reason,
+                "details": correction_text
+            }
+            st.session_state["corrections"].append(new_correction)
+            st.success("Correction added!")
+            st.rerun()
+    
+    # Display the corrections in a table
+    if st.session_state["corrections"]:
+        st.markdown("#### Current Corrections")
+        corrections_df = pd.DataFrame(st.session_state["corrections"])
+        st.table(corrections_df)
+    
+    # Button to submit all corrections
+    if st.button("Submit All Corrections"):
         try:
-            corrections = json.loads(corrections_input)
+            corrections = st.session_state["corrections"]
+            save_annotations(case_id, corrections)
+            st.success("Annotations saved.")
+            # Reset corrections list for next case
+            st.session_state["corrections"] = []
+            st.session_state.last_case = case_index + 1
+            st.session_state.current_slice = 0
+            st.rerun()
         except Exception as e:
-            st.error(f"Invalid JSON: {e}")
-            return
-        save_annotations(case_id, corrections)
-        st.success("Annotations saved.")
-        # Move to next case and reset carousel index
-        st.session_state.last_case = case_index + 1
-        st.session_state.current_slice = 0
-        st.rerun()
+            st.error(f"Failed to save annotations: {e}")
 
 # --- Reset function ---
 def reset_evaluation():
